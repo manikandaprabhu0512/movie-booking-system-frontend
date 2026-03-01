@@ -90,3 +90,7 @@ export const paymentsApi = {
       .then((r) => r.data),
   getPending: () => api.get("/payments/pending").then((r) => r.data)
 }
+export const healthApi = {
+  check: () => api.get("/api/public/health").then((r) => r.data)
+}
+

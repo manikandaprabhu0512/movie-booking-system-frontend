@@ -1,9 +1,21 @@
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import SectionHeader from "../components/SectionHeader";
 import Card from "../components/Card";
 import Badge from "../components/Badge";
+import Button from "../components/Button";
+import JsonPreview from "../components/JsonPreview";
+import { healthApi } from "../lib/api";
 
 const Dashboard = () => {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+
+  const healthQuery = useQuery({
+    queryKey: ["health-check"],
+    queryFn: healthApi.check,
+    refetchOnWindowFocus: false,
+  });
+
   return (
     <div className="space-y-8">
       <SectionHeader
@@ -52,11 +64,36 @@ const Dashboard = () => {
               Current Target
             </p>
             <p className="mt-2 font-display text-lg font-semibold text-slate-900">
-              http://deployment-ags-1-816947313.ap-south-1.elb.amazonaws.com/
+              {baseUrl}
             </p>
             <p className="mt-2 text-sm text-slate-500">
               Override with <code>VITE_API_BASE_URL</code> if needed.
             </p>
+          </div>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-1">
+        <Card title="Health Check" subtitle="GET /api/public/health">
+          <div className="space-y-4">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => healthQuery.refetch()}
+              disabled={healthQuery.isFetching}
+            >
+              {healthQuery.isFetching ? "Checking..." : "Check Health"}
+            </Button>
+
+            {healthQuery.isError && (
+              <p className="text-sm text-rose-600">
+                {healthQuery.error?.response?.data?.message ||
+                  healthQuery.error?.message ||
+                  "Health check failed."}
+              </p>
+            )}
+
+            <JsonPreview data={healthQuery.data} title="Health Response" />
           </div>
         </Card>
       </div>
